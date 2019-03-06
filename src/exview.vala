@@ -1,33 +1,29 @@
 using Gtk;
 
 class Exview : ApplicationWindow {
-    private Gdk.Pixbuf pixbuf;
-    private double scale;
     private string? file_path;
     private ScrolledWindow scrolled;
     private Viewport viewport;
-    private Image image;
+    private ScaledImage image;
 
     public Exview(Gtk.Application app, Gdk.Pixbuf pixbuf, string? file_path) {
         Object(application: app);
-        this.pixbuf = pixbuf;
-        this.scale = this.initial_scale();
         this.file_path = file_path;
         this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
-        this.image = new Image.from_pixbuf(this.scaled_pixbuf());
+        this.image = new ScaledImage(pixbuf, initial_scale(pixbuf));
         this.viewport.add(this.image);
         this.scrolled.add(this.viewport);
         this.add(scrolled);
-        this.set_default_size(this.image.get_pixbuf().width, this.image.get_pixbuf().height);
+        this.set_default_size(this.image.width, this.image.height);
     }
 
-    private double initial_scale() {
+    private static double initial_scale(Gdk.Pixbuf pixbuf) {
         double max_width = 800;
         double max_height = 600;
-        if ((double)this.pixbuf.width > max_width || (double)this.pixbuf.height > max_height) {
-            double width_scale = max_width / (double)this.pixbuf.width;
-            double height_scale = max_height / (double)this.pixbuf.height;
+        if ((double)pixbuf.width > max_width || (double)pixbuf.height > max_height) {
+            double width_scale = max_width / (double)pixbuf.width;
+            double height_scale = max_height / (double)pixbuf.height;
             if (width_scale < height_scale) {
                 return width_scale;
             } else {
@@ -35,11 +31,5 @@ class Exview : ApplicationWindow {
             }
         }
         return 1.0;
-    }
-
-    private Gdk.Pixbuf scaled_pixbuf() {
-        int width = (int)Math.round((double)this.pixbuf.width * this.scale);
-        int height = (int)Math.round((double)this.pixbuf.height * this.scale);
-        return this.pixbuf.scale_simple(width, height, Gdk.InterpType.BILINEAR);
     }
 }
