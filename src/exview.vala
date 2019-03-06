@@ -4,6 +4,7 @@ class Exview : ApplicationWindow {
     private Gdk.Pixbuf pixbuf;
     private double scale;
     private string? file_path;
+    private ScrolledWindow scrolled;
     private Viewport viewport;
     private Image image;
 
@@ -12,10 +13,13 @@ class Exview : ApplicationWindow {
         this.pixbuf = pixbuf;
         this.scale = this.initial_scale();
         this.file_path = file_path;
+        this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
         this.image = new Image.from_pixbuf(this.scaled_pixbuf());
         this.viewport.add(this.image);
-        this.add(this.viewport);
+        this.scrolled.add(this.viewport);
+        this.add(scrolled);
+        this.set_default_size(this.image.get_pixbuf().width, this.image.get_pixbuf().height);
     }
 
     private double initial_scale() {
