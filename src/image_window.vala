@@ -8,6 +8,11 @@ class ImageWindow : ApplicationWindow {
 
     public ImageWindow(Gtk.Application app, Gdk.Pixbuf pixbuf, string? file_path) {
         Object(application: app);
+        if (file_path != null) {
+            this.set_title(GLib.Path.get_basename(file_path));
+        } else {
+            this.set_title("Exview");
+        }
         this.file_path = file_path;
         this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
