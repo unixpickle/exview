@@ -15,7 +15,7 @@ class ImageWindow : ApplicationWindow {
         this.viewport.add(this.image);
         this.scrolled.add(this.viewport);
         this.add(scrolled);
-        this.set_default_size(this.image.width, this.image.height);
+        this.scrolled.set_size_request(this.image.width, this.image.height);
 
         this.setup_actions();
     }
