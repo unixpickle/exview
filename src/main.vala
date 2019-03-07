@@ -25,11 +25,17 @@ void main(string[] args) {
 
 GLib.MenuModel create_menubar() {
     var menu = new GLib.Menu();
+
+    var file_menu = new GLib.Menu();
+    append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
+    menu.append_submenu("_File", file_menu);
+
     var view_menu = new GLib.Menu();
     append_menu_item(view_menu, "_Zoom In", "win.zoom-in", "<Control>equal");
     append_menu_item(view_menu, "_Zoom Out", "win.zoom-out", "<Control>minus");
     append_menu_item(view_menu, "_Normal Size", "win.unzoom", "<Control>0");
     menu.append_submenu("_View", view_menu);
+
     return menu;
 }
 

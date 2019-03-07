@@ -29,6 +29,7 @@ class ImageWindow : ApplicationWindow {
         var zoom_in = new SimpleAction("zoom-in", null);
         var zoom_out = new SimpleAction("zoom-out", null);
         var unzoom = new SimpleAction("unzoom", null);
+        var close = new SimpleAction("close", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -43,9 +44,13 @@ class ImageWindow : ApplicationWindow {
         unzoom.activate.connect(() => {
             this.image.scale = 1.0;
         });
+        close.activate.connect(() => {
+            this.close();
+        });
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
+        this.add_action(close);
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
