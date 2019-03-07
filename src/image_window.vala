@@ -49,9 +49,17 @@ class ImageWindow : ApplicationWindow {
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
-        // TODO: get default screen size here.
-        double max_width = 800;
-        double max_height = 600;
+        var display = Gdk.Display.get_default();
+        Gdk.Monitor monitor = null;
+        for (int i = 0; i < display.get_n_monitors(); i++) {
+            monitor = display.get_monitor(i);
+            if (monitor.is_primary()) {
+                break;
+            }
+        }
+        var workarea = monitor.get_workarea();
+        double max_width = (double)workarea.width - 200;
+        double max_height = (double)workarea.height - 200;
         if ((double)pixbuf.width > max_width || (double)pixbuf.height > max_height) {
             double width_scale = max_width / (double)pixbuf.width;
             double height_scale = max_height / (double)pixbuf.height;
