@@ -50,6 +50,7 @@ class ScaledImage : Bin {
         this.remove(this.image);
         this.image = new Image.from_pixbuf(this.scaled_pixbuf());
         this.add(this.image);
+        this.image.show();
     }
 
     private Gdk.Pixbuf scaled_pixbuf() {
