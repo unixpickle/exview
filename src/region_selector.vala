@@ -69,7 +69,7 @@ class RegionSelector : DrawingArea {
         this.image.image_to_view(this.x1, this.y1, out x1, out y1);
         this.image.image_to_view(this.x2, this.y2, out x2, out y2);
 
-        if (x1 - x2 == 0 && y1 == y2) {
+        if (x1 == x2 && y1 == y2) {
             ctx.set_source_rgba(0, 0, 0, 0);
             ctx.paint();
             return;
