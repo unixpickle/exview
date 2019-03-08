@@ -58,6 +58,14 @@ class RegionSelector : DrawingArea {
         return new Gdk.Pixbuf.subpixbuf(this.image.pixbuf, x1, y1, x2 - x1, y2 - y1);
     }
 
+    public void deselect() {
+        this.x1 = 0;
+        this.y1 = 0;
+        this.x2 = 0;
+        this.y2 = 0;
+        this.queue_draw();
+    }
+
     private void mouse_down(double x, double y) {
         int img_x;
         int img_y;

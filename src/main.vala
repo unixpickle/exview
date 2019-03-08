@@ -25,12 +25,15 @@ GLib.MenuModel create_menubar() {
     var menu = new GLib.Menu();
 
     var file_menu = new GLib.Menu();
+    append_menu_item(file_menu, "_Save", "win.save", "<Control>S");
+    append_menu_item(file_menu, "Save _As", "win.save-as", "<Shift><Control>S");
     append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
     append_menu_item(file_menu, "_New From Clipboard", "win.new-clipboard", "<Control>N");
     menu.append_submenu("_File", file_menu);
 
     var edit_menu = new GLib.Menu();
     append_menu_item(edit_menu, "_Copy", "win.copy", "<Control>C");
+    append_menu_item(edit_menu, "C_rop", "win.crop", "<Control>K");
     menu.append_submenu("_Edit", edit_menu);
 
     var view_menu = new GLib.Menu();

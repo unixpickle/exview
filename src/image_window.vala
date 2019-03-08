@@ -54,6 +54,9 @@ class ImageWindow : ApplicationWindow {
         var close = new SimpleAction("close", null);
         var copy = new SimpleAction("copy", null);
         var new_clipboard = new SimpleAction("new-clipboard", null);
+        var save = new SimpleAction("save", null);
+        var save_as = new SimpleAction("save-as", null);
+        var crop = new SimpleAction("crop", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -77,17 +80,58 @@ class ImageWindow : ApplicationWindow {
         new_clipboard.activate.connect(() => {
             ImageWindow.create_from_clipboard(this.application);
         });
+        save.activate.connect(() => {
+            this.save();
+        });
+        save_as.activate.connect(() => {
+            this.save_as();
+        });
+        crop.activate.connect(() => {
+            this.crop();
+        });
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
         this.add_action(close);
         this.add_action(copy);
         this.add_action(new_clipboard);
+        this.add_action(save);
+        this.add_action(save_as);
+        this.add_action(crop);
     }
 
     private void copy_selection() {
         var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
         clip.set_image(this.selector.cropped_image());
+    }
+
+    private void save() {
+        if (this.file_path == null) {
+            this.save_as();
+            return;
+        }
+        string[] comps = this.file_path.split(".");
+        try {
+            this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
+        } catch (GLib.Error error) {
+            // TODO: dialog here.
+        }
+    }
+
+    private void save_as() {
+        var dialog = new FileChooserDialog("Choose Output Image", this, FileChooserAction.SAVE, "_Cancel", ResponseType.CANCEL, "_Export", ResponseType.ACCEPT, null);
+        dialog.set_filename("Untitled.png");
+        if (dialog.run() == ResponseType.ACCEPT) {
+            this.file_path = dialog.get_filename();
+            this.set_title(GLib.Path.get_basename(this.file_path));
+            this.save();
+        }
+        dialog.close();
+    }
+
+    private void crop() {
+        this.image.pixbuf = this.selector.cropped_image();
+        this.selector.deselect();
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
