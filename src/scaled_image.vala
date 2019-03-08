@@ -48,6 +48,16 @@ class ScaledImage : Bin {
         this.add(this.image);
     }
 
+    public void view_to_image(double x, double y, out int x_img, out int y_img) {
+        x_img = (int)Math.round(x / this._scale);
+        y_img = (int)Math.round(y / this._scale);
+    }
+
+    public void image_to_view(int x_img, int y_img, out double x, out double y) {
+        x = (double)x_img * this._scale;
+        y = (double)y_img * this._scale;
+    }
+
     private void update_image() {
         this.remove(this.image);
         this.image = new Image.from_pixbuf(this.scaled_pixbuf());
