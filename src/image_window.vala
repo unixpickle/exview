@@ -30,6 +30,14 @@ class ImageWindow : ApplicationWindow {
         this.setup_actions();
     }
 
+    public static void create_from_clipboard(Gtk.Application app) {
+        var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
+        var pixbuf = clip.wait_for_image();
+        if (pixbuf != null) {
+            new ImageWindow(app, pixbuf, null).show_all();
+        }
+    }
+
     private void setup_actions() {
         var zoom_in = new SimpleAction("zoom-in", null);
         var zoom_out = new SimpleAction("zoom-out", null);
