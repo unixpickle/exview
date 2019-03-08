@@ -44,6 +44,11 @@ class ImageWindow : ApplicationWindow {
         var pixbuf = clip.wait_for_image();
         if (pixbuf != null) {
             new ImageWindow(app, pixbuf, null).show_all();
+        } else {
+            var dialog = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE,
+                "No image in clipboard.");
+            dialog.run();
+            dialog.close();
         }
     }
 
