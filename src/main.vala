@@ -26,6 +26,7 @@ GLib.MenuModel create_menubar() {
 
     var file_menu = new GLib.Menu();
     append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
+    append_menu_item(file_menu, "_New From Clipboard", "win.new-clipboard", "<Control>N");
     menu.append_submenu("_File", file_menu);
 
     var edit_menu = new GLib.Menu();

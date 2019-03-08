@@ -44,6 +44,7 @@ class ImageWindow : ApplicationWindow {
         var unzoom = new SimpleAction("unzoom", null);
         var close = new SimpleAction("close", null);
         var copy = new SimpleAction("copy", null);
+        var new_clipboard = new SimpleAction("new-clipboard", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -64,11 +65,15 @@ class ImageWindow : ApplicationWindow {
         copy.activate.connect(() => {
             this.copy_selection();
         });
+        new_clipboard.activate.connect(() => {
+            ImageWindow.create_from_clipboard(this.application);
+        });
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
         this.add_action(close);
         this.add_action(copy);
+        this.add_action(new_clipboard);
     }
 
     private void copy_selection() {
