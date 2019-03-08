@@ -17,15 +17,7 @@ class RegionSelector : DrawingArea {
         this.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK |
             Gdk.EventMask.POINTER_MOTION_MASK);
         this.button_press_event.connect((event) => {
-            int x;
-            int y;
-            this.image.view_to_image(event.x, event.y, out x, out y);
-            this.x1 = this.x2 = x;
-            this.y1 = this.y2 = y;
-            this.dragging = true;
-            this.dragging_x2 = true;
-            this.dragging_y2 = true;
-            this.queue_draw();
+            this.mouse_down(event.x, event.y);
             return true;
         });
         this.button_release_event.connect((event) => {
@@ -36,20 +28,7 @@ class RegionSelector : DrawingArea {
             if (!this.dragging) {
                 return false;
             }
-            int x;
-            int y;
-            this.image.view_to_image(event.x, event.y, out x, out y);
-            if (this.dragging_x2) {
-                this.x2 = x;
-            } else {
-                this.x1 = x;
-            }
-            if (this.dragging_y2) {
-                this.y2 = y;
-            } else {
-                this.y1 = y;
-            }
-            this.queue_draw();
+            this.mouse_move(event.x, event.y);
             return true;
         });
         this.set_size_request(image.width, image.height);
@@ -63,17 +42,91 @@ class RegionSelector : DrawingArea {
         });
     }
 
-    private void draw_selection(Cairo.Context ctx) {
-        double x1, y1;
-        double x2, y2;
-        this.image.image_to_view(this.x1, this.y1, out x1, out y1);
-        this.image.image_to_view(this.x2, this.y2, out x2, out y2);
+    private void mouse_down(double x, double y) {
+        int img_x;
+        int img_y;
+        this.image.view_to_image(x, y, out img_x, out img_y);
 
-        if (x1 == x2 && y1 == y2) {
+        if (!this.closest_corner(x, y, out this.dragging_x2, out this.dragging_y2)) {
+            this.x1 = this.x2 = img_x;
+            this.y1 = this.y2 = img_y;
+            this.dragging_x2 = true;
+            this.dragging_y2 = true;
+        }
+        this.dragging = true;
+        this.queue_draw();
+    }
+
+    private void mouse_move(double x, double y) {
+        int img_x;
+        int img_y;
+        this.image.view_to_image(x, y, out img_x, out img_y);
+        if (this.dragging_x2) {
+            this.x2 = img_x;
+        } else {
+            this.x1 = img_x;
+        }
+        if (this.dragging_y2) {
+            this.y2 = img_y;
+        } else {
+            this.y1 = img_y;
+        }
+        this.queue_draw();
+    }
+
+    private bool closest_corner(double x, double y, out bool x2, out bool y2) {
+        x2 = false;
+        y2 = false;
+        if (this.no_selection()) {
+            return false;
+        }
+        double d1 = this.dist_to_corner(x, y, this.x1, this.y1);
+        double d2 = this.dist_to_corner(x, y, this.x2, this.y1);
+        double d3 = this.dist_to_corner(x, y, this.x1, this.y2);
+        double d4 = this.dist_to_corner(x, y, this.x2, this.y2);
+        double min = d1;
+        double values[] = {d1, d2, d3, d4};
+        foreach (double v in values) {
+            if (v < min) {
+                min = v;
+            }
+        }
+        if (min > 10) {
+            return false;
+        }
+        if (min == d2) {
+            x2 = true;
+        } else if (min == d3) {
+            y2 = true;
+        } else if (min == d4) {
+            x2 = true;
+            y2 = true;
+        }
+        return true;
+    }
+
+    private double dist_to_corner(double x, double y, int img_x, int img_y) {
+        double x1, y1;
+        this.image.image_to_view(img_x, img_y, out x1, out y1);
+        double distance = Math.sqrt(Math.pow(x - x1, 2) + Math.pow(y - y1, 2));
+        return distance;
+    }
+
+    private bool no_selection() {
+        return this.x1 == this.x2 && this.y1 == this.y2;
+    }
+
+    private void draw_selection(Cairo.Context ctx) {
+        if (this.no_selection()) {
             ctx.set_source_rgba(0, 0, 0, 0);
             ctx.paint();
             return;
         }
+
+        double x1, y1;
+        double x2, y2;
+        this.image.image_to_view(this.x1, this.y1, out x1, out y1);
+        this.image.image_to_view(this.x2, this.y2, out x2, out y2);
 
         if (x1 > x2) {
             double tmp = x2;
