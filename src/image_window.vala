@@ -25,7 +25,16 @@ class ImageWindow : ApplicationWindow {
         this.viewport.add(overlay);
         this.scrolled.add(this.viewport);
         this.add(scrolled);
-        this.scrolled.set_size_request(this.image.width, this.image.height);
+
+        int width = this.image.width;
+        int height = this.image.height;
+        if (width < 300) {
+            width = 300;
+        }
+        if (height < 300) {
+            height = 300;
+        }
+        this.scrolled.set_size_request(width, height);
 
         this.setup_actions();
     }

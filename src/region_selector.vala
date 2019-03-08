@@ -46,10 +46,15 @@ class RegionSelector : DrawingArea {
         if (this.no_selection()) {
             return this.image.pixbuf;
         }
-        int x1 = this.x1 < this.x2 ? this.x1 : this.x2;
-        int x2 = this.x1 < this.x2 ? this.x2 : this.x1;
-        int y1 = this.y1 < this.y2 ? this.y1 : this.y2;
-        int y2 = this.y1 < this.y2 ? this.y2 : this.y1;
+        int w = this.image.pixbuf.get_width();
+        int h = this.image.pixbuf.get_height();
+        int x1 = (this.x1 < this.x2 ? this.x1 : this.x2).clamp(0, w);
+        int x2 = (this.x1 < this.x2 ? this.x2 : this.x1).clamp(0, w);
+        int y1 = (this.y1 < this.y2 ? this.y1 : this.y2).clamp(0, h);
+        int y2 = (this.y1 < this.y2 ? this.y2 : this.y1).clamp(0, h);
+        if (x1 == x2 || y1 == y2) {
+            return this.image.pixbuf;
+        }
         return new Gdk.Pixbuf.subpixbuf(this.image.pixbuf, x1, y1, x2 - x1, y2 - y1);
     }
 
