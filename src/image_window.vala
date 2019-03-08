@@ -5,6 +5,7 @@ class ImageWindow : ApplicationWindow {
     private ScrolledWindow scrolled;
     private Viewport viewport;
     private ScaledImage image;
+    private RegionSelector selector;
 
     public ImageWindow(Gtk.Application app, Gdk.Pixbuf pixbuf, string? file_path) {
         Object(application: app);
@@ -17,7 +18,11 @@ class ImageWindow : ApplicationWindow {
         this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
         this.image = new ScaledImage(pixbuf, initial_scale(pixbuf));
-        this.viewport.add(this.image);
+        this.selector = new RegionSelector(this.image);
+        var overlay = new SelectorOverlay(this.image, this.selector);
+        overlay.halign = Align.CENTER;
+        overlay.valign = Align.CENTER;
+        this.viewport.add(overlay);
         this.scrolled.add(this.viewport);
         this.add(scrolled);
         this.scrolled.set_size_request(this.image.width, this.image.height);

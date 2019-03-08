@@ -39,6 +39,8 @@ class ScaledImage : Bin {
         }
     }
 
+    public signal void updated();
+
     public ScaledImage(Gdk.Pixbuf pixbuf, double scale) {
         this._pixbuf = pixbuf;
         this._scale = scale;
@@ -51,6 +53,7 @@ class ScaledImage : Bin {
         this.image = new Image.from_pixbuf(this.scaled_pixbuf());
         this.add(this.image);
         this.image.show();
+        this.updated();
     }
 
     private Gdk.Pixbuf scaled_pixbuf() {
