@@ -66,6 +66,14 @@ class RegionSelector : DrawingArea {
         this.queue_draw();
     }
 
+    public void select_all() {
+        this.x1 = 0;
+        this.y1 = 0;
+        this.x2 = this.image.pixbuf.get_width();
+        this.y2 = this.image.pixbuf.get_height();
+        this.queue_draw();
+    }
+
     private void mouse_down(double x, double y) {
         int img_x;
         int img_y;

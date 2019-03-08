@@ -34,6 +34,7 @@ GLib.MenuModel create_menubar() {
     var edit_menu = new GLib.Menu();
     append_menu_item(edit_menu, "_Copy", "win.copy", "<Control>C");
     append_menu_item(edit_menu, "C_rop", "win.crop", "<Control>K");
+    append_menu_item(edit_menu, "Select All", "win.select-all", "<Control>A");
     menu.append_submenu("_Edit", edit_menu);
 
     var view_menu = new GLib.Menu();

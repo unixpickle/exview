@@ -57,6 +57,7 @@ class ImageWindow : ApplicationWindow {
         var save = new SimpleAction("save", null);
         var save_as = new SimpleAction("save-as", null);
         var crop = new SimpleAction("crop", null);
+        var select_all = new SimpleAction("select-all", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -89,6 +90,9 @@ class ImageWindow : ApplicationWindow {
         crop.activate.connect(() => {
             this.crop();
         });
+        select_all.activate.connect(() => {
+            this.selector.select_all();
+        });
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
@@ -98,6 +102,7 @@ class ImageWindow : ApplicationWindow {
         this.add_action(save);
         this.add_action(save_as);
         this.add_action(crop);
+        this.add_action(select_all);
     }
 
     private void copy_selection() {
