@@ -30,6 +30,10 @@ GLib.MenuModel create_menubar() {
     append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
     menu.append_submenu("_File", file_menu);
 
+    var edit_menu = new GLib.Menu();
+    append_menu_item(edit_menu, "_Copy", "win.copy", "<Control>C");
+    menu.append_submenu("_Edit", edit_menu);
+
     var view_menu = new GLib.Menu();
     append_menu_item(view_menu, "_Zoom In", "win.zoom-in", "<Control>equal");
     append_menu_item(view_menu, "_Zoom Out", "win.zoom-out", "<Control>minus");

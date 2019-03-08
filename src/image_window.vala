@@ -35,6 +35,7 @@ class ImageWindow : ApplicationWindow {
         var zoom_out = new SimpleAction("zoom-out", null);
         var unzoom = new SimpleAction("unzoom", null);
         var close = new SimpleAction("close", null);
+        var copy = new SimpleAction("copy", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -52,10 +53,19 @@ class ImageWindow : ApplicationWindow {
         close.activate.connect(() => {
             this.close();
         });
+        copy.activate.connect(() => {
+            this.copy_selection();
+        });
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
         this.add_action(close);
+        this.add_action(copy);
+    }
+
+    private void copy_selection() {
+        var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
+        clip.set_image(this.selector.cropped_image());
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {

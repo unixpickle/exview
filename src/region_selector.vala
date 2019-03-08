@@ -42,6 +42,17 @@ class RegionSelector : DrawingArea {
         });
     }
 
+    public Gdk.Pixbuf cropped_image() {
+        if (this.no_selection()) {
+            return this.image.pixbuf;
+        }
+        int x1 = this.x1 < this.x2 ? this.x1 : this.x2;
+        int x2 = this.x1 < this.x2 ? this.x2 : this.x1;
+        int y1 = this.y1 < this.y2 ? this.y1 : this.y2;
+        int y2 = this.y1 < this.y2 ? this.y2 : this.y1;
+        return new Gdk.Pixbuf.subpixbuf(this.image.pixbuf, x1, y1, x2 - x1, y2 - y1);
+    }
+
     private void mouse_down(double x, double y) {
         int img_x;
         int img_y;
