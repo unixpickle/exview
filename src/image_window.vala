@@ -34,7 +34,7 @@ class ImageWindow : ApplicationWindow {
         if (height < 300) {
             height = 300;
         }
-        this.scrolled.set_size_request(width, height);
+        this.scrolled.set_size_request(width + 100, height + 100);
 
         this.setup_actions();
     }
@@ -147,8 +147,8 @@ class ImageWindow : ApplicationWindow {
             }
         }
         var workarea = monitor.get_workarea();
-        double max_width = (double)workarea.width - 200;
-        double max_height = (double)workarea.height - 200;
+        double max_width = (double)workarea.width - 300;
+        double max_height = (double)workarea.height - 300;
         if ((double)pixbuf.width > max_width || (double)pixbuf.height > max_height) {
             double width_scale = max_width / (double)pixbuf.width;
             double height_scale = max_height / (double)pixbuf.height;
