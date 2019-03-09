@@ -39,6 +39,11 @@ class ImageWindow : ApplicationWindow {
         this.setup_actions();
     }
 
+    public new void show_all() {
+        base.show_all();
+        this.scrolled.set_size_request(200, 200);
+    }
+
     public static void create_from_clipboard(Gtk.Application app) {
         var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
         var pixbuf = clip.wait_for_image();
