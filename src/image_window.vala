@@ -82,27 +82,15 @@ class ImageWindow : ApplicationWindow {
         unzoom.activate.connect(() => {
             this.image.scale = 1.0;
         });
-        close.activate.connect(() => {
-            this.close();
-        });
-        copy.activate.connect(() => {
-            this.copy_selection();
-        });
+        close.activate.connect(this.close);
+        copy.activate.connect(this.copy_selection);
         new_clipboard.activate.connect(() => {
             ImageWindow.create_from_clipboard(this.application);
         });
-        save.activate.connect(() => {
-            this.save();
-        });
-        save_as.activate.connect(() => {
-            this.save_as();
-        });
-        crop.activate.connect(() => {
-            this.crop();
-        });
-        select_all.activate.connect(() => {
-            this.selector.select_all();
-        });
+        save.activate.connect(this.save);
+        save_as.activate.connect(this.save_as);
+        crop.activate.connect(this.crop);
+        select_all.activate.connect(this.selector.select_all);
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
