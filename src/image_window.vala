@@ -117,7 +117,10 @@ class ImageWindow : ApplicationWindow {
         try {
             this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
         } catch (GLib.Error error) {
-            // TODO: dialog here.
+            var dialog = new MessageDialog(this, 0, MessageType.ERROR, ButtonsType.CLOSE,
+                @"Could not export image: $(error.message)");
+            dialog.run();
+            dialog.close();
         }
     }
 

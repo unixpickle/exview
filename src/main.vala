@@ -11,7 +11,10 @@ void main(string[] args) {
                 var pixbuf = new Gdk.Pixbuf.from_file(file.get_path());
                 new ImageWindow(app, pixbuf, file.get_path()).show_all();
             } catch (GLib.Error error) {
-                // TODO: error dialog here.
+                var dialog = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE,
+                    @"Unable to process image: $(error.message)");
+                dialog.run();
+                dialog.close();
             }
         }
     });
