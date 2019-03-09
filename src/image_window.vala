@@ -24,7 +24,13 @@ class ImageWindow : ApplicationWindow {
         overlay.valign = Align.CENTER;
         this.viewport.add(overlay);
         this.scrolled.add(this.viewport);
-        this.add(scrolled);
+        this.style_scrolled();
+
+        var container = new Box(VERTICAL, 0);
+        container.pack_start(scrolled);
+        container.add(new MeasureBar(selector));
+
+        this.add(container);
 
         int width = this.image.width;
         int height = this.image.height;
@@ -55,6 +61,21 @@ class ImageWindow : ApplicationWindow {
             dialog.run();
             dialog.close();
         }
+    }
+
+    private void style_scrolled() {
+        this.scrolled.get_style_context().add_class("image-scroller");
+
+        var css = new CssProvider();
+        try {
+            css.load_from_data(".image-scroller { background-color: black; }");
+        } catch (GLib.Error e) {
+            assert(false);
+        }
+
+        var display = Gdk.Display.get_default();
+        var screen = display.get_default_screen();
+        StyleContext.add_provider_for_screen(screen, css, 600);
     }
 
     private void setup_actions() {

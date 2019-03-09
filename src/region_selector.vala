@@ -11,6 +11,8 @@ class RegionSelector : DrawingArea {
     private int x2 = 0;
     private int y2 = 0;
 
+    public signal void updated();
+
     public RegionSelector(ScaledImage image) {
         this.image = image;
         this.dragging = false;
@@ -34,7 +36,7 @@ class RegionSelector : DrawingArea {
         this.set_size_request(image.width, image.height);
         image.updated.connect(() => {
             this.set_size_request(image.width, image.height);
-            this.queue_draw();
+            this.update();
         });
         this.draw.connect((ctx) => {
             this.draw_selection(ctx);
@@ -63,7 +65,7 @@ class RegionSelector : DrawingArea {
         this.y1 = 0;
         this.x2 = 0;
         this.y2 = 0;
-        this.queue_draw();
+        this.update();
     }
 
     public void select_all() {
@@ -71,6 +73,23 @@ class RegionSelector : DrawingArea {
         this.y1 = 0;
         this.x2 = this.image.pixbuf.get_width();
         this.y2 = this.image.pixbuf.get_height();
+        this.update();
+    }
+
+    public bool no_selection() {
+        return this.x1 == this.x2 && this.y1 == this.y2;
+    }
+
+    public int selection_width() {
+        return x1 < x2 ? x2 - x1 : x1 - x2;
+    }
+
+    public int selection_height() {
+        return y1 < y2 ? y2 - y1 : y1 - y2;
+    }
+
+    private void update() {
+        this.updated();
         this.queue_draw();
     }
 
@@ -86,7 +105,7 @@ class RegionSelector : DrawingArea {
             this.dragging_y2 = true;
         }
         this.dragging = true;
-        this.queue_draw();
+        this.update();
     }
 
     private void mouse_move(double x, double y) {
@@ -103,7 +122,7 @@ class RegionSelector : DrawingArea {
         } else {
             this.y1 = img_y;
         }
-        this.queue_draw();
+        this.update();
     }
 
     private bool closest_corner(double x, double y, out bool x2, out bool y2) {
@@ -142,10 +161,6 @@ class RegionSelector : DrawingArea {
         this.image.image_to_view(img_x, img_y, out x1, out y1);
         double distance = Math.sqrt(Math.pow(x - x1, 2) + Math.pow(y - y1, 2));
         return distance;
-    }
-
-    private bool no_selection() {
-        return this.x1 == this.x2 && this.y1 == this.y2;
     }
 
     private void draw_selection(Cairo.Context ctx) {
