@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Exview
-Icon=icon
+Icon=/home/USERNAME/.local/share/icons/hicolor/48x48/apps/exview.svg
 StartupNotify=true
-Exec=build/exview
+Exec=/home/USERNAME/.local/share/exview/exview %U
+MimeType=image/png;image/jpeg
