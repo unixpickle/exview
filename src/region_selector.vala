@@ -3,9 +3,7 @@ using Gtk;
 class RegionSelector : DrawingArea {
     private ScaledImage image;
 
-    private bool dragging;
-    private bool dragging_x2;
-    private bool dragging_y2;
+    private DragState? drag_state = null;
     private int x1 = 0;
     private int y1 = 0;
     private int x2 = 0;
@@ -15,22 +13,23 @@ class RegionSelector : DrawingArea {
 
     public RegionSelector(ScaledImage image) {
         this.image = image;
-        this.dragging = false;
         this.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK |
             Gdk.EventMask.POINTER_MOTION_MASK);
         this.button_press_event.connect((event) => {
-            this.mouse_down(event.x, event.y);
+            this.drag_state = new DragState(this.image, this.x1, this.y1, this.x2, this.y2,
+                event.x, event.y);
+            this.update();
             return true;
         });
         this.button_release_event.connect((event) => {
-            this.dragging = false;
+            this.drag_state = null;
             return true;
         });
         this.motion_notify_event.connect((event) => {
-            if (!this.dragging) {
-                return false;
+            if (this.drag_state != null) {
+                this.drag_state.mouse_move(event.x, event.y);
+                this.update();
             }
-            this.mouse_move(event.x, event.y);
             return true;
         });
         this.set_size_request(image.width, image.height);
@@ -61,6 +60,7 @@ class RegionSelector : DrawingArea {
     }
 
     public void deselect() {
+        this.drag_state = null;
         this.x1 = 0;
         this.y1 = 0;
         this.x2 = 0;
@@ -69,6 +69,7 @@ class RegionSelector : DrawingArea {
     }
 
     public void select_all() {
+        this.drag_state = null;
         this.x1 = 0;
         this.y1 = 0;
         this.x2 = this.image.pixbuf.get_width();
@@ -89,78 +90,11 @@ class RegionSelector : DrawingArea {
     }
 
     private void update() {
+        if (this.drag_state != null) {
+            this.drag_state.get_selection(out this.x1, out this.y1, out this.x2, out this.y2);
+        }
         this.updated();
         this.queue_draw();
-    }
-
-    private void mouse_down(double x, double y) {
-        int img_x;
-        int img_y;
-        this.image.view_to_image(x, y, out img_x, out img_y);
-
-        if (!this.closest_corner(x, y, out this.dragging_x2, out this.dragging_y2)) {
-            this.x1 = this.x2 = img_x;
-            this.y1 = this.y2 = img_y;
-            this.dragging_x2 = true;
-            this.dragging_y2 = true;
-        }
-        this.dragging = true;
-        this.update();
-    }
-
-    private void mouse_move(double x, double y) {
-        int img_x;
-        int img_y;
-        this.image.view_to_image(x, y, out img_x, out img_y);
-        if (this.dragging_x2) {
-            this.x2 = img_x;
-        } else {
-            this.x1 = img_x;
-        }
-        if (this.dragging_y2) {
-            this.y2 = img_y;
-        } else {
-            this.y1 = img_y;
-        }
-        this.update();
-    }
-
-    private bool closest_corner(double x, double y, out bool x2, out bool y2) {
-        x2 = false;
-        y2 = false;
-        if (this.no_selection()) {
-            return false;
-        }
-        double d1 = this.dist_to_corner(x, y, this.x1, this.y1);
-        double d2 = this.dist_to_corner(x, y, this.x2, this.y1);
-        double d3 = this.dist_to_corner(x, y, this.x1, this.y2);
-        double d4 = this.dist_to_corner(x, y, this.x2, this.y2);
-        double min = d1;
-        double values[] = {d1, d2, d3, d4};
-        foreach (double v in values) {
-            if (v < min) {
-                min = v;
-            }
-        }
-        if (min > 10) {
-            return false;
-        }
-        if (min == d2) {
-            x2 = true;
-        } else if (min == d3) {
-            y2 = true;
-        } else if (min == d4) {
-            x2 = true;
-            y2 = true;
-        }
-        return true;
-    }
-
-    private double dist_to_corner(double x, double y, int img_x, int img_y) {
-        double x1, y1;
-        this.image.image_to_view(img_x, img_y, out x1, out y1);
-        double distance = Math.sqrt(Math.pow(x - x1, 2) + Math.pow(y - y1, 2));
-        return distance;
     }
 
     private void draw_selection(Cairo.Context ctx) {
@@ -213,5 +147,103 @@ class SelectorOverlay : Fixed {
             this.set_size_request(image.width, image.height);
         });
         this.set_size_request(image.width, image.height);
+    }
+}
+
+class DragState {
+    private ScaledImage image;
+    private bool dragging_x2 = false;
+    private bool dragging_y2 = false;
+    private int x1;
+    private int y1;
+    private int x2;
+    private int y2;
+    double mouse_x;
+    double mouse_y;
+
+    public DragState(ScaledImage img, int x1, int y1, int x2, int y2,
+                     double mouse_x, double mouse_y) {
+        this.image = img;
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.mouse_x = mouse_x;
+        this.mouse_y = mouse_y;
+        if (!this.find_closest_corner()) {
+            this.setup_new_drag();
+        }
+    }
+
+    public void mouse_move(double x, double y) {
+        this.mouse_x = x;
+        this.mouse_y = y;
+        int img_x;
+        int img_y;
+        this.image.view_to_image(x, y, out img_x, out img_y);
+        if (this.dragging_x2) {
+            this.x2 = img_x;
+        } else {
+            this.x1 = img_x;
+        }
+        if (this.dragging_y2) {
+            this.y2 = img_y;
+        } else {
+            this.y1 = img_y;
+        }
+    }
+
+    public void get_selection(out int x1, out int y1, out int x2, out int y2) {
+        x1 = this.x1;
+        y1 = this.y1;
+        x2 = this.x2;
+        y2 = this.y2;
+    }
+
+    private bool find_closest_corner() {
+        if (this.x1 == this.x2 && this.y1 == this.y2) {
+            return false;
+        }
+        double d1 = this.dist_to_corner(this.x1, this.y1);
+        double d2 = this.dist_to_corner(this.x2, this.y1);
+        double d3 = this.dist_to_corner(this.x1, this.y2);
+        double d4 = this.dist_to_corner(this.x2, this.y2);
+        double min = d1;
+        double values[] = {d1, d2, d3, d4};
+        foreach (double v in values) {
+            if (v < min) {
+                min = v;
+            }
+        }
+        if (min > 10) {
+            return false;
+        }
+        if (min == d2) {
+            this.dragging_x2 = true;
+        } else if (min == d3) {
+            this.dragging_y2 = true;
+        } else if (min == d4) {
+            this.dragging_x2 = true;
+            this.dragging_y2 = true;
+        }
+        return true;
+    }
+
+    private double dist_to_corner(int img_x, int img_y) {
+        double x1, y1;
+        this.image.image_to_view(img_x, img_y, out x1, out y1);
+        double distance = Math.sqrt(Math.pow(this.mouse_x - x1, 2) +
+            Math.pow(this.mouse_y - y1, 2));
+        return distance;
+    }
+
+    private void setup_new_drag() {
+        int img_x;
+        int img_y;
+        this.image.view_to_image(this.mouse_x, this.mouse_y, out img_x, out img_y);
+        this.x1 = this.x2 = img_x;
+        this.y1 = this.y2 = img_y;
+        this.dragging_x2 = true;
+        this.dragging_y2 = true;
     }
 }
