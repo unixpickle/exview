@@ -2,6 +2,7 @@ using Gtk;
 
 class ImageWindow : ApplicationWindow {
     private string? file_path;
+    private DragKeyState key_state;
     private ScrolledWindow scrolled;
     private Viewport viewport;
     private ScaledImage image;
@@ -15,10 +16,12 @@ class ImageWindow : ApplicationWindow {
             this.set_title("Exview");
         }
         this.file_path = file_path;
+        this.key_state = new DragKeyState();
+        this.setup_key_events();
         this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
         this.image = new ScaledImage(pixbuf, initial_scale(pixbuf));
-        this.selector = new RegionSelector(this.image);
+        this.selector = new RegionSelector(this.image, this.key_state);
         var overlay = new SelectorOverlay(this.image, this.selector);
         overlay.halign = Align.CENTER;
         overlay.valign = Align.CENTER;
@@ -76,6 +79,25 @@ class ImageWindow : ApplicationWindow {
         var display = Gdk.Display.get_default();
         var screen = display.get_default_screen();
         StyleContext.add_provider_for_screen(screen, css, 600);
+    }
+
+    private void setup_key_events() {
+        this.key_press_event.connect((event) => {
+            if (event.keyval == Gdk.Key.X) {
+                this.key_state.x = true;
+            } else if (event.keyval == Gdk.Key.Y) {
+                this.key_state.y = true;
+            }
+            return false;
+        });
+        this.key_release_event.connect((event) => {
+            if (event.keyval == Gdk.Key.X) {
+                this.key_state.x = false;
+            } else if (event.keyval == Gdk.Key.Y) {
+                this.key_state.y = false;
+            }
+            return false;
+        });
     }
 
     private void setup_actions() {
@@ -183,5 +205,34 @@ class ImageWindow : ApplicationWindow {
             }
         }
         return 1.0;
+    }
+}
+
+class DragKeyState {
+    public signal void updated();
+
+    private bool _x = false;
+    private bool _y = false;
+
+    public bool x {
+        get {
+            return this._x;
+        }
+
+        set {
+            this._x = value;
+            this.updated();
+        }
+    }
+
+    public bool y {
+        get {
+            return this._y;
+        }
+
+        set {
+            this._y = value;
+            this.updated();
+        }
     }
 }

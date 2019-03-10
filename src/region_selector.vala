@@ -4,20 +4,24 @@ class RegionSelector : DrawingArea {
     private ScaledImage image;
 
     private DragState? drag_state = null;
+    private DragKeyState key_state;
     private int x1 = 0;
     private int y1 = 0;
     private int x2 = 0;
     private int y2 = 0;
+    private bool pressing_x = false;
+    private bool pressing_y = false;
 
     public signal void updated();
 
-    public RegionSelector(ScaledImage image) {
+    public RegionSelector(ScaledImage image, DragKeyState key_state) {
         this.image = image;
+        this.key_state = key_state;
         this.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK |
             Gdk.EventMask.POINTER_MOTION_MASK);
         this.button_press_event.connect((event) => {
             this.drag_state = new DragState(this.image, this.x1, this.y1, this.x2, this.y2,
-                event.x, event.y);
+                event.x, event.y, this.pressing_x, this.pressing_y);
             this.update();
             return true;
         });
@@ -31,6 +35,12 @@ class RegionSelector : DrawingArea {
                 this.update();
             }
             return true;
+        });
+        this.key_state.updated.connect(() => {
+            if (this.drag_state != null) {
+                this.drag_state.keys_changed(this.key_state.x, this.key_state.y);
+                this.update();
+            }
         });
         this.set_size_request(image.width, image.height);
         image.updated.connect(() => {
@@ -154,6 +164,12 @@ class DragState {
     private ScaledImage image;
     private bool dragging_x2 = false;
     private bool dragging_y2 = false;
+    private bool pressing_x;
+    private bool pressing_y;
+    private int x1_init;
+    private int y1_init;
+    private int x2_init;
+    private int y2_init;
     private int x1;
     private int y1;
     private int x2;
@@ -162,14 +178,16 @@ class DragState {
     double mouse_y;
 
     public DragState(ScaledImage img, int x1, int y1, int x2, int y2,
-                     double mouse_x, double mouse_y) {
+                     double mouse_x, double mouse_y, bool pressing_x, bool pressing_y) {
         this.image = img;
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
+        this.x1 = this.x1_init = x1;
+        this.y1 = this.y1_init = y1;
+        this.x2 = this.x2_init = x2;
+        this.y2 = this.y2_init = y2;
         this.mouse_x = mouse_x;
         this.mouse_y = mouse_y;
+        this.pressing_x = pressing_x;
+        this.pressing_y = pressing_y;
         if (!this.find_closest_corner()) {
             this.setup_new_drag();
         }
@@ -193,11 +211,25 @@ class DragState {
         }
     }
 
+    public void keys_changed(bool pressing_x, bool pressing_y) {
+        this.pressing_x = pressing_x;
+        this.pressing_y = pressing_y;
+    }
+
     public void get_selection(out int x1, out int y1, out int x2, out int y2) {
-        x1 = this.x1;
-        y1 = this.y1;
-        x2 = this.x2;
-        y2 = this.y2;
+        x1 = this.x1_init;
+        y1 = this.y1_init;
+        x2 = this.x2_init;
+        y2 = this.y2_init;
+        bool pressing_anything = this.pressing_x || this.pressing_y;
+        if (this.pressing_x || !pressing_anything) {
+            x1 = this.x1;
+            x2 = this.x2;
+        }
+        if (this.pressing_y || !pressing_anything) {
+            y1 = this.y1;
+            y2 = this.y2;
+        }
     }
 
     private bool find_closest_corner() {
