@@ -1,4 +1,4 @@
-build/exview: src/image_window.vala src/main.vala src/scaled_image.vala src/region_selector.vala src/measure_bar.vala
+build/exview: src/image_window.vala src/main.vala src/scaled_image.vala src/region_selector.vala src/measure_bar.vala src/key_state.vala src/drag_state.vala src/mouse_state.vala
 	mkdir -p build
 	valac --pkg gtk+-3.0 -X -lm -o build/exview $^
 
