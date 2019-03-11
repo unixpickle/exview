@@ -10,7 +10,7 @@ class ImageWindow : ApplicationWindow {
     public ImageWindow(Gtk.Application app, Gdk.Pixbuf pixbuf, string? file_path) {
         Object(application: app);
         if (file_path != null) {
-            this.set_title(GLib.Path.get_basename(file_path));
+            this.set_title(Path.get_basename(file_path));
         } else {
             this.set_title("Exview");
         }
@@ -69,7 +69,7 @@ class ImageWindow : ApplicationWindow {
         var css = new CssProvider();
         try {
             css.load_from_data(".image-scroller { background-color: black; }");
-        } catch (GLib.Error e) {
+        } catch (Error e) {
             assert(false);
         }
 
@@ -137,7 +137,7 @@ class ImageWindow : ApplicationWindow {
         string[] comps = this.file_path.split(".");
         try {
             this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
-        } catch (GLib.Error error) {
+        } catch (Error error) {
             var dialog = new MessageDialog(this, 0, MessageType.ERROR, ButtonsType.CLOSE,
                 @"Could not export image: $(error.message)");
             dialog.run();
@@ -150,7 +150,7 @@ class ImageWindow : ApplicationWindow {
         dialog.set_filename("Untitled.png");
         if (dialog.run() == ResponseType.ACCEPT) {
             this.file_path = dialog.get_filename();
-            this.set_title(GLib.Path.get_basename(this.file_path));
+            this.set_title(Path.get_basename(this.file_path));
             this.save();
         }
         dialog.close();

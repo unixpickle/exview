@@ -6,11 +6,11 @@ void main(string[] args) {
         ImageWindow.create_from_clipboard(app);
     });
     app.open.connect((files, hint) => {
-        foreach (GLib.File file in files) {
+        foreach (File file in files) {
             try {
                 var pixbuf = new Gdk.Pixbuf.from_file(file.get_path());
                 new ImageWindow(app, pixbuf, file.get_path()).show_all();
-            } catch (GLib.Error error) {
+            } catch (Error error) {
                 var dialog = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE,
                     @"Unable to process image: $(error.message)");
                 dialog.run();
@@ -24,7 +24,7 @@ void main(string[] args) {
     app.run(args);
 }
 
-GLib.MenuModel create_menubar() {
+MenuModel create_menubar() {
     var menu = new GLib.Menu();
 
     var file_menu = new GLib.Menu();

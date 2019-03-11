@@ -1,6 +1,6 @@
 using Gtk;
 
-class MouseState : GLib.Object {
+class MouseState : Object {
     public signal void updated();
 
     public double x = 0.0;

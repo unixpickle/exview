@@ -1,10 +1,10 @@
 using Gtk;
 
-class KeyState : GLib.Object {
+class KeyState : Object {
     public signal void updated();
 
-    public bool x;
-    public bool y;
+    public bool x = false;
+    public bool y = false;
 
     public KeyState(Widget widget) {
         widget.key_press_event.connect((event) => {

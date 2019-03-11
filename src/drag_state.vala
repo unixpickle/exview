@@ -1,4 +1,4 @@
-class DragState : GLib.Object {
+class DragState : Object {
     public signal void updated();
 
     private ScaledImage image;
