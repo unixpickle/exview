@@ -36,6 +36,8 @@ class DragState : Object {
         int img_x;
         int img_y;
         this.image.view_to_image(this.mouse_state.x, this.mouse_state.y, out img_x, out img_y);
+        img_x = img_x.clamp(0, image.pixbuf.width);
+        img_y = img_y.clamp(0, image.pixbuf.height);
         if (this.dragging_x2) {
             this.x2 = img_x;
         } else {
