@@ -1,3 +1,3 @@
 # exview
 
-An **ex**tended image **view**er. Let's you view, resize, and crop images.
+An **ex**tended image **view**er. Lets you view, resize, and crop images.
