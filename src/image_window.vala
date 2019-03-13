@@ -7,8 +7,9 @@ class ImageWindow : ApplicationWindow {
     private ScaledImage image;
     private RegionSelector selector;
 
-    public ImageWindow(Gtk.Application app, Gdk.Pixbuf pixbuf, string? file_path) {
+    public ImageWindow(Gtk.Application app, Gdk.Pixbuf raw_pixbuf, string? file_path) {
         Object(application: app);
+        var pixbuf = raw_pixbuf.apply_embedded_orientation();
         if (file_path != null) {
             this.set_title(Path.get_basename(file_path));
         } else {

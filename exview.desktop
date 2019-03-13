@@ -4,4 +4,4 @@ Name=Exview
 Icon=/home/USERNAME/.local/share/icons/hicolor/48x48/apps/exview.svg
 StartupNotify=true
 Exec=/home/USERNAME/.local/share/exview/exview %U
-MimeType=image/png;image/jpeg
+MimeType=image/png;image/jpeg;image/pjpeg
