@@ -90,6 +90,7 @@ class ImageWindow : ApplicationWindow {
         var save_as = new SimpleAction("save-as", null);
         var crop = new SimpleAction("crop", null);
         var select_all = new SimpleAction("select-all", null);
+        var resize = new SimpleAction("resize", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -113,6 +114,7 @@ class ImageWindow : ApplicationWindow {
         save_as.activate.connect(this.save_as);
         crop.activate.connect(this.crop);
         select_all.activate.connect(this.selector.select_all);
+        resize.activate.connect(this.resize_image);
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
@@ -123,6 +125,7 @@ class ImageWindow : ApplicationWindow {
         this.add_action(save_as);
         this.add_action(crop);
         this.add_action(select_all);
+        this.add_action(resize);
     }
 
     private void copy_selection() {
@@ -160,6 +163,18 @@ class ImageWindow : ApplicationWindow {
     private void crop() {
         this.image.pixbuf = this.selector.cropped_image();
         this.selector.deselect();
+    }
+
+    private void resize_image() {
+        var dialog = new ResizeDialog(this.image.pixbuf.width, this.image.pixbuf.height);
+        dialog.set_transient_for(this);
+        var result = dialog.run();
+        if (result == 1) {
+            this.selector.deselect();
+            this.image.pixbuf = this.image.pixbuf.scale_simple(dialog.width, dialog.height,
+                BILINEAR);
+        }
+        dialog.close();
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {

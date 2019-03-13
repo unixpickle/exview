@@ -46,6 +46,10 @@ MenuModel create_menubar() {
     append_menu_item(view_menu, "_Normal Size", "win.unzoom", "<Control>0");
     menu.append_submenu("_View", view_menu);
 
+    var image_menu = new GLib.Menu();
+    append_menu_item(image_menu, "_Resize", "win.resize", "<Control>R");
+    menu.append_submenu("_Image", image_menu);
+
     return menu;
 }
 
