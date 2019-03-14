@@ -51,14 +51,23 @@ class ImageWindow : ApplicationWindow {
         this.scrolled.set_size_request(200, 200);
     }
 
-    public static void create_from_clipboard(Gtk.Application app) {
+    public static bool create_from_clipboard(Gtk.Application app) {
         var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
         var pixbuf = clip.wait_for_image();
         if (pixbuf != null) {
             new ImageWindow(app, pixbuf, null).show_all();
-        } else {
+            return true;
+        }
+        return false;
+    }
+
+    public static void create_from_file(Gtk.Application app, string path) {
+        try {
+            var pixbuf = new Gdk.Pixbuf.from_file(path);
+            new ImageWindow(app, pixbuf, path).show_all();
+        } catch (Error error) {
             var dialog = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE,
-                "No image in clipboard.");
+                @"Unable to process image: $(error.message)");
             dialog.run();
             dialog.close();
         }
@@ -91,6 +100,7 @@ class ImageWindow : ApplicationWindow {
         var crop = new SimpleAction("crop", null);
         var select_all = new SimpleAction("select-all", null);
         var resize = new SimpleAction("resize", null);
+        var open = new SimpleAction("open", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -115,6 +125,7 @@ class ImageWindow : ApplicationWindow {
         crop.activate.connect(this.crop);
         select_all.activate.connect(this.selector.select_all);
         resize.activate.connect(this.resize_image);
+        open.activate.connect(this.open_file);
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
@@ -126,6 +137,7 @@ class ImageWindow : ApplicationWindow {
         this.add_action(crop);
         this.add_action(select_all);
         this.add_action(resize);
+        this.add_action(open);
     }
 
     private void copy_selection() {
@@ -173,6 +185,14 @@ class ImageWindow : ApplicationWindow {
             this.selector.deselect();
             this.image.pixbuf = this.image.pixbuf.scale_simple(dialog.width, dialog.height,
                 BILINEAR);
+        }
+        dialog.close();
+    }
+
+    private void open_file() {
+        var dialog = new FileChooserDialog("Open File", this, FileChooserAction.OPEN, "_Cancel", ResponseType.CANCEL, "_Open", ResponseType.ACCEPT, null);
+        if (dialog.run() == ResponseType.ACCEPT) {
+            ImageWindow.create_from_file(this.application, dialog.get_filename());
         }
         dialog.close();
     }

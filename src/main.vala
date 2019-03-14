@@ -3,19 +3,18 @@ using Gtk;
 void main(string[] args) {
     var app = new Gtk.Application("com.aqnichol.exview", ApplicationFlags.HANDLES_OPEN);
     app.activate.connect((gapp) => {
-        ImageWindow.create_from_clipboard(app);
+        if (!ImageWindow.create_from_clipboard(app)) {
+            var dialog = new FileChooserDialog("Open File", null, FileChooserAction.OPEN,
+                "_Cancel", ResponseType.CANCEL, "_Open", ResponseType.ACCEPT, null);
+            if (dialog.run() == ResponseType.ACCEPT) {
+                ImageWindow.create_from_file(app, dialog.get_filename());
+            }
+            dialog.close();
+        }
     });
     app.open.connect((files, hint) => {
         foreach (File file in files) {
-            try {
-                var pixbuf = new Gdk.Pixbuf.from_file(file.get_path());
-                new ImageWindow(app, pixbuf, file.get_path()).show_all();
-            } catch (Error error) {
-                var dialog = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE,
-                    @"Unable to process image: $(error.message)");
-                dialog.run();
-                dialog.close();
-            }
+            ImageWindow.create_from_file(app, file.get_path());
         }
     });
     app.startup.connect(() => {
@@ -28,10 +27,11 @@ MenuModel create_menubar() {
     var menu = new GLib.Menu();
 
     var file_menu = new GLib.Menu();
-    append_menu_item(file_menu, "_Save", "win.save", "<Control>S");
-    append_menu_item(file_menu, "Save _As", "win.save-as", "<Shift><Control>S");
-    append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
     append_menu_item(file_menu, "_New From Clipboard", "win.new-clipboard", "<Control>N");
+    append_menu_item(file_menu, "_Open File...", "win.open", "<Control>O");
+    append_menu_item(file_menu, "_Save", "win.save", "<Control>S");
+    append_menu_item(file_menu, "Save _As...", "win.save-as", "<Shift><Control>S");
+    append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
     menu.append_submenu("_File", file_menu);
 
     var edit_menu = new GLib.Menu();
@@ -47,7 +47,7 @@ MenuModel create_menubar() {
     menu.append_submenu("_View", view_menu);
 
     var image_menu = new GLib.Menu();
-    append_menu_item(image_menu, "_Resize", "win.resize", "<Control>R");
+    append_menu_item(image_menu, "_Resize...", "win.resize", "<Control>R");
     menu.append_submenu("_Image", image_menu);
 
     return menu;
