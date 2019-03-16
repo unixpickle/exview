@@ -32,11 +32,26 @@ class ResizeDialog : Dialog {
         });
 
         var grid = new Grid();
+        grid.set_row_spacing(10);
+        grid.set_column_spacing(10);
         grid.attach(width_label, 0, 0, 1, 1);
         grid.attach(height_label, 0, 1, 1, 1);
         grid.attach(this.width_field, 1, 0, 1, 1);
         grid.attach(this.height_field, 1, 1, 1, 1);
         grid.show_all();
+
+        grid.get_style_context().add_class("resize-content");
+
+        var css = new CssProvider();
+        try {
+            css.load_from_data(".resize-content { padding: 6px; }");
+        } catch (Error e) {
+            assert(false);
+        }
+
+        var display = Gdk.Display.get_default();
+        var screen = display.get_default_screen();
+        StyleContext.add_provider_for_screen(screen, css, 600);
 
         this.get_content_area().add(grid);
     }
