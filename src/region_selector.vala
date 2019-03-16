@@ -17,8 +17,8 @@ class RegionSelector : DrawingArea {
         this.image = image;
         this.mouse_state = new MouseState(this);
         this.key_state = key_state;
-        this.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK |
-            Gdk.EventMask.POINTER_MOTION_MASK);
+        this.events = Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK |
+            Gdk.EventMask.POINTER_MOTION_MASK;
         this.button_press_event.connect((event) => {
             this.drag_state = new DragState(this.image, this.x1, this.y1, this.x2, this.y2,
                 this.mouse_state, this.key_state);
@@ -45,8 +45,8 @@ class RegionSelector : DrawingArea {
         if (this.no_selection()) {
             return this.image.pixbuf;
         }
-        int w = this.image.pixbuf.get_width();
-        int h = this.image.pixbuf.get_height();
+        int w = this.image.pixbuf.width;
+        int h = this.image.pixbuf.height;
         int x1 = (this.x1 < this.x2 ? this.x1 : this.x2).clamp(0, w);
         int x2 = (this.x1 < this.x2 ? this.x2 : this.x1).clamp(0, w);
         int y1 = (this.y1 < this.y2 ? this.y1 : this.y2).clamp(0, h);
@@ -70,8 +70,8 @@ class RegionSelector : DrawingArea {
         this.drag_state = null;
         this.x1 = 0;
         this.y1 = 0;
-        this.x2 = this.image.pixbuf.get_width();
-        this.y2 = this.image.pixbuf.get_height();
+        this.x2 = this.image.pixbuf.width;
+        this.y2 = this.image.pixbuf.height;
         this.update();
     }
 

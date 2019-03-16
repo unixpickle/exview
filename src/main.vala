@@ -18,7 +18,7 @@ void main(string[] args) {
         }
     });
     app.startup.connect(() => {
-        app.set_menubar(create_menubar());
+        app.menubar = create_menubar();
     });
     app.run(args);
 }

@@ -11,9 +11,9 @@ class ImageWindow : ApplicationWindow {
         Object(application: app);
         var pixbuf = raw_pixbuf.apply_embedded_orientation();
         if (file_path != null) {
-            this.set_title(Path.get_basename(file_path));
+            this.title = Path.get_basename(file_path);
         } else {
-            this.set_title("Exview");
+            this.title = "Exview";
         }
         this.file_path = file_path;
         this.scrolled = new ScrolledWindow(null, null);
@@ -166,7 +166,7 @@ class ImageWindow : ApplicationWindow {
         dialog.set_filename("Untitled.png");
         if (dialog.run() == ResponseType.ACCEPT) {
             this.file_path = dialog.get_filename();
-            this.set_title(Path.get_basename(this.file_path));
+            this.title = Path.get_basename(this.file_path);
             this.save();
         }
         dialog.close();

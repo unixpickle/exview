@@ -21,19 +21,19 @@ class ResizeDialog : Dialog {
         var height_label = new Label("Height:");
         this.width_field = new Entry();
         this.height_field = new Entry();
-        this.width_field.set_text(@"$(w)");
-        this.height_field.set_text(@"$(h)");
+        this.width_field.text = @"$(w)";
+        this.height_field.text = @"$(h)";
 
         this.width_field.changed.connect(() => {
-            this.width = int.parse(this.width_field.get_text());
+            this.width = int.parse(this.width_field.text);
         });
         this.height_field.changed.connect(() => {
-            this.height = int.parse(this.height_field.get_text());
+            this.height = int.parse(this.height_field.text);
         });
 
         var grid = new Grid();
-        grid.set_row_spacing(10);
-        grid.set_column_spacing(10);
+        grid.row_spacing = 10;
+        grid.column_spacing = 10;
         grid.attach(width_label, 0, 0, 1, 1);
         grid.attach(height_label, 0, 1, 1, 1);
         grid.attach(this.width_field, 1, 0, 1, 1);

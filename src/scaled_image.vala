@@ -7,13 +7,13 @@ class ScaledImage : Bin {
 
     public int width {
         get {
-            return this.image.get_pixbuf().width;
+            return this.image.pixbuf.width;
         }
     }
 
     public int height {
         get {
-            return this.image.get_pixbuf().height;
+            return this.image.pixbuf.height;
         }
     }
 
