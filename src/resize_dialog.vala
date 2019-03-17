@@ -4,6 +4,7 @@ class ResizeDialog : Dialog {
 
     private int start_width;
     private int start_height;
+    private Widget resize_button;
     private Entry width_field;
     private Entry height_field;
     public int width;
@@ -15,7 +16,8 @@ class ResizeDialog : Dialog {
         this.width = w;
         this.height = h;
 
-        this.add_buttons("Cancel", ButtonsType.CLOSE, "Resize", ButtonsType.OK);
+        this.add_button("Cancel", ButtonsType.CLOSE);
+        this.resize_button = this.add_button("Resize", ButtonsType.OK);
 
         var width_label = new Label("Width:");
         var height_label = new Label("Height:");
@@ -25,9 +27,11 @@ class ResizeDialog : Dialog {
         this.height_field.text = @"$(h)";
 
         this.width_field.changed.connect(() => {
+            this.enable_or_disable();
             this.width = int.parse(this.width_field.text);
         });
         this.height_field.changed.connect(() => {
+            this.enable_or_disable();
             this.height = int.parse(this.height_field.text);
         });
 
@@ -56,4 +60,13 @@ class ResizeDialog : Dialog {
         this.get_content_area().add(grid);
     }
 
+    void enable_or_disable() {
+        this.resize_button.sensitive = (valid_int_str(this.width_field.text) &&
+            valid_int_str(this.height_field.text));
+    }
+
+}
+
+bool valid_int_str(string s) {
+    return int.parse(s).to_string() == s;
 }
