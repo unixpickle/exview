@@ -7,6 +7,7 @@ class ResizeDialog : Dialog {
     private Widget resize_button;
     private Entry width_field;
     private Entry height_field;
+    private CheckButton proportional;
     public int width;
     public int height;
 
@@ -19,6 +20,9 @@ class ResizeDialog : Dialog {
         this.add_button("Cancel", ButtonsType.CLOSE);
         this.resize_button = this.add_button("Resize", ButtonsType.OK);
 
+        this.proportional = new CheckButton.with_label("Keep aspect ratio");
+        this.proportional.active = true;
+
         var width_label = new Label("Width:");
         var height_label = new Label("Height:");
         this.width_field = new Entry();
@@ -26,14 +30,7 @@ class ResizeDialog : Dialog {
         this.width_field.text = @"$(w)";
         this.height_field.text = @"$(h)";
 
-        this.width_field.changed.connect(() => {
-            this.enable_or_disable();
-            this.width = int.parse(this.width_field.text);
-        });
-        this.height_field.changed.connect(() => {
-            this.enable_or_disable();
-            this.height = int.parse(this.height_field.text);
-        });
+        this.setup_field_events();
 
         var grid = new Grid();
         grid.row_spacing = 10;
@@ -42,6 +39,7 @@ class ResizeDialog : Dialog {
         grid.attach(height_label, 0, 1, 1, 1);
         grid.attach(this.width_field, 1, 0, 1, 1);
         grid.attach(this.height_field, 1, 1, 1, 1);
+        grid.attach(this.proportional, 0, 2, 2, 1);
         grid.show_all();
 
         grid.get_style_context().add_class("resize-content");
@@ -60,13 +58,49 @@ class ResizeDialog : Dialog {
         this.get_content_area().add(grid);
     }
 
-    void enable_or_disable() {
-        this.resize_button.sensitive = (valid_int_str(this.width_field.text) &&
-            valid_int_str(this.height_field.text));
+    private void setup_field_events() {
+        var changing_text = false;
+        this.width_field.changed.connect(() => {
+            if (changing_text) {
+                return;
+            }
+            if (is_valid_int(this.width_field.text)) {
+                this.width = int.parse(this.width_field.text);
+                if (this.proportional.active) {
+                    double ratio = (double)this.width / (double)this.start_width;
+                    this.height = (int)Math.round(ratio * (double)this.start_height);
+                    changing_text = true;
+                    this.height_field.text = @"$(this.height)";
+                    changing_text = false;
+                }
+            }
+            this.enable_or_disable();
+        });
+        this.height_field.changed.connect(() => {
+            if (changing_text) {
+                return;
+            }
+            if (is_valid_int(this.height_field.text)) {
+                this.height = int.parse(this.height_field.text);
+                if (this.proportional.active) {
+                    double ratio = (double)this.height / (double)this.start_height;
+                    this.width = (int)Math.round(ratio * (double)this.start_width);
+                    changing_text = true;
+                    this.width_field.text = @"$(this.width)";
+                    changing_text = false;
+                }
+            }
+            this.enable_or_disable();
+        });
+    }
+
+    private void enable_or_disable() {
+        this.resize_button.sensitive = (is_valid_int(this.width_field.text) &&
+            is_valid_int(this.height_field.text));
     }
 
 }
 
-bool valid_int_str(string s) {
+bool is_valid_int(string s) {
     return int.parse(s).to_string() == s;
 }
