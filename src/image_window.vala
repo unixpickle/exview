@@ -149,7 +149,7 @@ class ImageWindow : ApplicationWindow {
         new_clipboard.activate.connect(() => {
             ImageWindow.create_from_clipboard(this.application);
         });
-        save.activate.connect(this.save);
+        save.activate.connect(() => this.save);
         save_as.activate.connect(this.save_as);
         crop.activate.connect(this.crop);
         select_all.activate.connect(this.selector.select_all);
@@ -196,14 +196,18 @@ class ImageWindow : ApplicationWindow {
         clip.set_image(this.selector.cropped_image());
     }
 
-    private void save() {
+    private bool save() {
         if (this.file_path == null) {
             this.save_as();
-            return;
+            return true;
         }
         string[] comps = this.file_path.split(".");
+        string file_type = comps[comps.length - 1].ascii_down();
+        if (file_type == "jpg") {
+            file_type = "jpeg";
+        }
         try {
-            this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
+            this.image.pixbuf.save(this.file_path, file_type);
             this.clear_undo_redo();
             this.modified = false;
         } catch (Error error) {
@@ -211,15 +215,20 @@ class ImageWindow : ApplicationWindow {
                 @"Could not export image: $(error.message)");
             dialog.run();
             dialog.close();
+            return false;
         }
+        return true;
     }
 
     private void save_as() {
         var dialog = new FileChooserDialog("Choose Output Image", this, FileChooserAction.SAVE, "_Cancel", ResponseType.CANCEL, "_Export", ResponseType.ACCEPT, null);
         dialog.set_filename("Untitled.png");
         if (dialog.run() == ResponseType.ACCEPT) {
+            var old_path = this.file_path;
             this.file_path = dialog.get_filename();
-            this.save();
+            if (!this.save()) {
+                this.file_path = old_path;
+            }
         }
         dialog.close();
     }
