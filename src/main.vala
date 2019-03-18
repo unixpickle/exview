@@ -47,7 +47,9 @@ MenuModel create_menubar() {
     menu.append_submenu("_View", view_menu);
 
     var image_menu = new GLib.Menu();
-    append_menu_item(image_menu, "_Resize...", "win.resize", "<Control>R");
+    append_menu_item(image_menu, "_Resize...", "win.resize", "<Control><Shift>R");
+    append_menu_item(image_menu, "Rotate R_ight", "win.rotate-right", "<Control>R");
+    append_menu_item(image_menu, "Rotate _Left", "win.rotate-left", "<Control>L");
     menu.append_submenu("_Image", image_menu);
 
     return menu;

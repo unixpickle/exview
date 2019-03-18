@@ -119,6 +119,8 @@ class ImageWindow : ApplicationWindow {
         var select_all = new SimpleAction("select-all", null);
         var resize = new SimpleAction("resize", null);
         var open = new SimpleAction("open", null);
+        var rotate_right = new SimpleAction("rotate-right", null);
+        var rotate_left = new SimpleAction("rotate-left", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -144,6 +146,8 @@ class ImageWindow : ApplicationWindow {
         select_all.activate.connect(this.selector.select_all);
         resize.activate.connect(this.resize_image);
         open.activate.connect(this.open_file);
+        rotate_right.activate.connect(() => this.rotate(true));
+        rotate_left.activate.connect(() => this.rotate(false));
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
@@ -156,6 +160,8 @@ class ImageWindow : ApplicationWindow {
         this.add_action(select_all);
         this.add_action(resize);
         this.add_action(open);
+        this.add_action(rotate_right);
+        this.add_action(rotate_left);
     }
 
     private void update_title() {
@@ -203,8 +209,7 @@ class ImageWindow : ApplicationWindow {
     }
 
     private void crop() {
-        this.image.pixbuf = this.selector.cropped_image();
-        this.modify();
+        this.modify(this.selector.cropped_image());
     }
 
     private void resize_image() {
@@ -212,11 +217,17 @@ class ImageWindow : ApplicationWindow {
         dialog.set_transient_for(this);
         var result = dialog.run();
         if (result == 1) {
-            this.image.pixbuf = this.image.pixbuf.scale_simple(dialog.width, dialog.height,
-                BILINEAR);
-            this.modify();
+            this.modify(this.image.pixbuf.scale_simple(dialog.width, dialog.height, BILINEAR));
         }
         dialog.close();
+    }
+
+    private void rotate(bool clockwise) {
+        if (clockwise) {
+            this.modify(this.image.pixbuf.rotate_simple(CLOCKWISE));
+        } else {
+            this.modify(this.image.pixbuf.rotate_simple(COUNTERCLOCKWISE));
+        }
     }
 
     private void open_file() {
@@ -227,7 +238,8 @@ class ImageWindow : ApplicationWindow {
         dialog.close();
     }
 
-    private void modify() {
+    private void modify(Gdk.Pixbuf new_image) {
+        this.image.pixbuf = new_image;
         this.selector.deselect();
         this.modified = true;
     }
