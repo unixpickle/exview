@@ -7,6 +7,8 @@ class ImageWindow : ApplicationWindow {
     private Viewport viewport;
     private ScaledImage image;
     private RegionSelector selector;
+    private List<Gdk.Pixbuf> undo_buffer;
+    private List<Gdk.Pixbuf> redo_buffer;
 
     private string? file_path {
         get {
@@ -34,6 +36,8 @@ class ImageWindow : ApplicationWindow {
         Object(application: app);
         var pixbuf = raw_pixbuf.apply_embedded_orientation();
         this.file_path = file_path;
+        this.undo_buffer = new List<Gdk.Pixbuf>();
+        this.redo_buffer = new List<Gdk.Pixbuf>();
         this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
         this.image = new ScaledImage(pixbuf, initial_scale(pixbuf));
@@ -121,6 +125,8 @@ class ImageWindow : ApplicationWindow {
         var open = new SimpleAction("open", null);
         var rotate_right = new SimpleAction("rotate-right", null);
         var rotate_left = new SimpleAction("rotate-left", null);
+        var undo = new SimpleAction("undo", null);
+        var redo = new SimpleAction("redo", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -148,6 +154,8 @@ class ImageWindow : ApplicationWindow {
         open.activate.connect(this.open_file);
         rotate_right.activate.connect(() => this.rotate(true));
         rotate_left.activate.connect(() => this.rotate(false));
+        undo.activate.connect(this.undo);
+        redo.activate.connect(this.redo);
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
@@ -162,6 +170,8 @@ class ImageWindow : ApplicationWindow {
         this.add_action(open);
         this.add_action(rotate_right);
         this.add_action(rotate_left);
+        this.add_action(undo);
+        this.add_action(redo);
     }
 
     private void update_title() {
@@ -189,6 +199,8 @@ class ImageWindow : ApplicationWindow {
         string[] comps = this.file_path.split(".");
         try {
             this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
+            this.redo_buffer = new List<Gdk.Pixbuf>();
+            this.undo_buffer = new List<Gdk.Pixbuf>();
             this.modified = false;
         } catch (Error error) {
             var dialog = new MessageDialog(this, 0, MessageType.ERROR, ButtonsType.CLOSE,
@@ -239,9 +251,33 @@ class ImageWindow : ApplicationWindow {
     }
 
     private void modify(Gdk.Pixbuf new_image) {
+        this.undo_buffer.prepend(this.image.pixbuf);
+        this.redo_buffer = new List<Gdk.Pixbuf>();
         this.image.pixbuf = new_image;
         this.selector.deselect();
         this.modified = true;
+    }
+
+    private void undo() {
+        if (this.undo_buffer.length() != 0) {
+            var last = this.undo_buffer.data;
+            this.undo_buffer.remove(last);
+            this.redo_buffer.prepend(this.image.pixbuf);
+            this.image.pixbuf = last;
+            this.selector.deselect();
+            this.modified = this.undo_buffer.length() > 0;
+        }
+    }
+
+    private void redo() {
+        if (this.redo_buffer.length() != 0) {
+            var next = this.redo_buffer.data;
+            this.redo_buffer.remove(next);
+            this.undo_buffer.prepend(this.image.pixbuf);
+            this.image.pixbuf = next;
+            this.selector.deselect();
+            this.modified = true;
+        }
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
