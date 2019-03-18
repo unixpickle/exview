@@ -6,13 +6,13 @@ install: build/exview
 	mkdir -p ~/.local/share/exview
 	cp build/exview ~/.local/share/exview
 	cat exview.desktop | sed -E "s/USERNAME/${USER}/g" > ~/.local/share/applications/exview.desktop
-	cp exview.svg ~/.local/share/icons/hicolor/48x48/apps/exview_v2.svg
+	cp exview.svg ~/.local/share/icons/hicolor/48x48/apps/exview_v3.svg
 	chmod +x ~/.local/share/applications/exview.desktop
 
 uninstall:
 	rm -rf ~/.local/share/exview
 	rm -f ~/.local/share/applications/exview.desktop
-	rm -f ~/.local/share/icons/hicolor/48x48/apps/exview_v2.svg
+	rm -f ~/.local/share/icons/hicolor/48x48/apps/exview_v3.svg
 
 clean:
 	rm -rf build/

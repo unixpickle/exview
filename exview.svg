@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-    <circle cx="24" cy="24" r="22" fill="#f9ce70" />
-    <path d="M5,24 Q24,5 43,24 Q24,43 5,24 z" stroke="black" fill="#d5d5d5" />
-    <circle cx="24" cy="24" r="8" fill="#65bcd4" />
+    <circle cx="24" cy="24" r="22" fill="#ffe4b2" />
+    <path d="M7,24 Q24,3 41,24 Q24,45 7,24 z" stroke="black" fill="white" />
+    <circle cx="24" cy="24" r="8" fill="#48abf2" />
     <circle cx="24" cy="24" r="3" fill="black" />
 </svg>
