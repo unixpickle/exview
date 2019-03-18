@@ -7,6 +7,9 @@ class ImageWindow : ApplicationWindow {
     private Viewport viewport;
     private ScaledImage image;
     private RegionSelector selector;
+
+    private GLib.SimpleAction undo_action;
+    private GLib.SimpleAction redo_action;
     private List<Gdk.Pixbuf> undo_buffer;
     private List<Gdk.Pixbuf> redo_buffer;
 
@@ -125,8 +128,8 @@ class ImageWindow : ApplicationWindow {
         var open = new SimpleAction("open", null);
         var rotate_right = new SimpleAction("rotate-right", null);
         var rotate_left = new SimpleAction("rotate-left", null);
-        var undo = new SimpleAction("undo", null);
-        var redo = new SimpleAction("redo", null);
+        this.undo_action = new SimpleAction("undo", null);
+        this.redo_action = new SimpleAction("redo", null);
         zoom_in.activate.connect(() => {
             if (this.image.scale < 5) {
                 this.image.scale *= 1.5;
@@ -154,8 +157,8 @@ class ImageWindow : ApplicationWindow {
         open.activate.connect(this.open_file);
         rotate_right.activate.connect(() => this.rotate(true));
         rotate_left.activate.connect(() => this.rotate(false));
-        undo.activate.connect(this.undo);
-        redo.activate.connect(this.redo);
+        this.undo_action.activate.connect(this.undo);
+        this.redo_action.activate.connect(this.redo);
         this.add_action(zoom_in);
         this.add_action(zoom_out);
         this.add_action(unzoom);
@@ -170,8 +173,10 @@ class ImageWindow : ApplicationWindow {
         this.add_action(open);
         this.add_action(rotate_right);
         this.add_action(rotate_left);
-        this.add_action(undo);
-        this.add_action(redo);
+        this.add_action(this.undo_action);
+        this.add_action(this.redo_action);
+
+        this.update_undo_redo();
     }
 
     private void update_title() {
@@ -199,8 +204,7 @@ class ImageWindow : ApplicationWindow {
         string[] comps = this.file_path.split(".");
         try {
             this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
-            this.redo_buffer = new List<Gdk.Pixbuf>();
-            this.undo_buffer = new List<Gdk.Pixbuf>();
+            this.clear_undo_redo();
             this.modified = false;
         } catch (Error error) {
             var dialog = new MessageDialog(this, 0, MessageType.ERROR, ButtonsType.CLOSE,
@@ -256,28 +260,44 @@ class ImageWindow : ApplicationWindow {
         this.image.pixbuf = new_image;
         this.selector.deselect();
         this.modified = true;
+        this.update_undo_redo();
+    }
+
+    private void clear_undo_redo() {
+        this.redo_buffer = new List<Gdk.Pixbuf>();
+        this.undo_buffer = new List<Gdk.Pixbuf>();
+        this.update_undo_redo();
     }
 
     private void undo() {
-        if (this.undo_buffer.length() != 0) {
-            var last = this.undo_buffer.data;
-            this.undo_buffer.remove(last);
-            this.redo_buffer.prepend(this.image.pixbuf);
-            this.image.pixbuf = last;
-            this.selector.deselect();
-            this.modified = this.undo_buffer.length() > 0;
+        if (this.undo_buffer.length() == 0) {
+            return;
         }
+        var last = this.undo_buffer.data;
+        this.undo_buffer.remove(last);
+        this.redo_buffer.prepend(this.image.pixbuf);
+        this.image.pixbuf = last;
+        this.selector.deselect();
+        this.modified = this.undo_buffer.length() > 0;
+        this.update_undo_redo();
     }
 
     private void redo() {
-        if (this.redo_buffer.length() != 0) {
-            var next = this.redo_buffer.data;
-            this.redo_buffer.remove(next);
-            this.undo_buffer.prepend(this.image.pixbuf);
-            this.image.pixbuf = next;
-            this.selector.deselect();
-            this.modified = true;
+        if (this.redo_buffer.length() == 0) {
+            return;
         }
+        var next = this.redo_buffer.data;
+        this.redo_buffer.remove(next);
+        this.undo_buffer.prepend(this.image.pixbuf);
+        this.image.pixbuf = next;
+        this.selector.deselect();
+        this.modified = true;
+        this.update_undo_redo();
+    }
+
+    private void update_undo_redo() {
+        this.undo_action.set_enabled(this.undo_buffer.length() > 0);
+        this.redo_action.set_enabled(this.redo_buffer.length() > 0);
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
