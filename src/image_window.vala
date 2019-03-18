@@ -1,20 +1,38 @@
 using Gtk;
 
 class ImageWindow : ApplicationWindow {
-    private string? file_path;
+    private string? _file_path;
+    private bool _modified = false;
     private ScrolledWindow scrolled;
     private Viewport viewport;
     private ScaledImage image;
     private RegionSelector selector;
 
+    private string? file_path {
+        get {
+            return this._file_path;
+        }
+
+        set {
+            this._file_path = value;
+            this.update_title();
+        }
+    }
+
+    private bool modified {
+        get {
+            return this._modified;
+        }
+
+        set {
+            this._modified = value;
+            this.update_title();
+        }
+    }
+
     public ImageWindow(Gtk.Application app, Gdk.Pixbuf raw_pixbuf, string? file_path) {
         Object(application: app);
         var pixbuf = raw_pixbuf.apply_embedded_orientation();
-        if (file_path != null) {
-            this.title = Path.get_basename(file_path);
-        } else {
-            this.title = "Exview";
-        }
         this.file_path = file_path;
         this.scrolled = new ScrolledWindow(null, null);
         this.viewport = new Viewport(null, null);
@@ -140,6 +158,18 @@ class ImageWindow : ApplicationWindow {
         this.add_action(open);
     }
 
+    private void update_title() {
+        string filename = "Untitled";
+        if (this.file_path != null) {
+            filename = Path.get_basename(this.file_path);
+        }
+        if (this.modified) {
+            this.title = @"* $(filename)";
+        } else {
+            this.title = filename;
+        }
+    }
+
     private void copy_selection() {
         var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
         clip.set_image(this.selector.cropped_image());
@@ -153,6 +183,7 @@ class ImageWindow : ApplicationWindow {
         string[] comps = this.file_path.split(".");
         try {
             this.image.pixbuf.save(this.file_path, comps[comps.length - 1].ascii_down());
+            this.modified = false;
         } catch (Error error) {
             var dialog = new MessageDialog(this, 0, MessageType.ERROR, ButtonsType.CLOSE,
                 @"Could not export image: $(error.message)");
@@ -166,7 +197,6 @@ class ImageWindow : ApplicationWindow {
         dialog.set_filename("Untitled.png");
         if (dialog.run() == ResponseType.ACCEPT) {
             this.file_path = dialog.get_filename();
-            this.title = Path.get_basename(this.file_path);
             this.save();
         }
         dialog.close();
@@ -174,7 +204,7 @@ class ImageWindow : ApplicationWindow {
 
     private void crop() {
         this.image.pixbuf = this.selector.cropped_image();
-        this.selector.deselect();
+        this.modify();
     }
 
     private void resize_image() {
@@ -182,9 +212,9 @@ class ImageWindow : ApplicationWindow {
         dialog.set_transient_for(this);
         var result = dialog.run();
         if (result == 1) {
-            this.selector.deselect();
             this.image.pixbuf = this.image.pixbuf.scale_simple(dialog.width, dialog.height,
                 BILINEAR);
+            this.modify();
         }
         dialog.close();
     }
@@ -195,6 +225,11 @@ class ImageWindow : ApplicationWindow {
             ImageWindow.create_from_file(this.application, dialog.get_filename());
         }
         dialog.close();
+    }
+
+    private void modify() {
+        this.selector.deselect();
+        this.modified = true;
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
