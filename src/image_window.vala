@@ -150,7 +150,7 @@ class ImageWindow : ApplicationWindow {
         new_clipboard.activate.connect(() => {
             ImageWindow.create_from_clipboard(this.application);
         });
-        save.activate.connect(() => this.save);
+        save.activate.connect(() => this.save());
         save_as.activate.connect(this.save_as);
         crop.activate.connect(this.crop);
         select_all.activate.connect(this.selector.select_all);
