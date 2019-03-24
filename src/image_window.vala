@@ -52,7 +52,7 @@ class ImageWindow : ApplicationWindow {
         this.scrolled.add(this.viewport);
         this.style_scrolled();
 
-        var container = new Box(VERTICAL, 0);
+        var container = new Box(Orientation.VERTICAL, 0);
         container.pack_start(scrolled);
         container.add(new MeasureBar(selector));
 
@@ -103,7 +103,8 @@ class ImageWindow : ApplicationWindow {
 
         var css = new CssProvider();
         try {
-            css.load_from_data(".image-scroller { background-color: black; }");
+            var code = ".image-scroller { background-color: black; }";
+            css.load_from_data(code, code.length);
         } catch (Error e) {
             assert(false);
         }
@@ -137,7 +138,7 @@ class ImageWindow : ApplicationWindow {
         });
         zoom_out.activate.connect(() => {
             this.image.scale /= 1.5;
-            if ((this.image.scale - 1).abs() < 1e-5) {
+            if (double_abs(this.image.scale - 1) < 1e-5) {
                 this.image.scale = 1.0;
             }
         });
@@ -242,16 +243,17 @@ class ImageWindow : ApplicationWindow {
         dialog.set_transient_for(this);
         var result = dialog.run();
         if (result == 1) {
-            this.modify(this.image.pixbuf.scale_simple(dialog.width, dialog.height, BILINEAR));
+            this.modify(this.image.pixbuf.scale_simple(dialog.width, dialog.height,
+                Gdk.InterpType.BILINEAR));
         }
         dialog.close();
     }
 
     private void rotate(bool clockwise) {
         if (clockwise) {
-            this.modify(this.image.pixbuf.rotate_simple(CLOCKWISE));
+            this.modify(this.image.pixbuf.rotate_simple(Gdk.PixbufRotation.CLOCKWISE));
         } else {
-            this.modify(this.image.pixbuf.rotate_simple(COUNTERCLOCKWISE));
+            this.modify(this.image.pixbuf.rotate_simple(Gdk.PixbufRotation.COUNTERCLOCKWISE));
         }
     }
 
@@ -310,17 +312,8 @@ class ImageWindow : ApplicationWindow {
     }
 
     private static double initial_scale(Gdk.Pixbuf pixbuf) {
-        var display = Gdk.Display.get_default();
-        Gdk.Monitor monitor = null;
-        for (int i = 0; i < display.get_n_monitors(); i++) {
-            monitor = display.get_monitor(i);
-            if (monitor.is_primary()) {
-                break;
-            }
-        }
-        var workarea = monitor.get_workarea();
-        double max_width = (double)workarea.width - 300;
-        double max_height = (double)workarea.height - 300;
+        double max_width = (double)Gdk.Screen.width() - 300;
+        double max_height = (double)Gdk.Screen.height() - 300;
         if ((double)pixbuf.width > max_width || (double)pixbuf.height > max_height) {
             double width_scale = max_width / (double)pixbuf.width;
             double height_scale = max_height / (double)pixbuf.height;
@@ -332,4 +325,11 @@ class ImageWindow : ApplicationWindow {
         }
         return 1.0;
     }
+}
+
+private double double_abs(double x) {
+    if (x < 0) {
+        return -x;
+    }
+    return x;
 }

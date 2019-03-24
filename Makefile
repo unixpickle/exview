@@ -1,6 +1,6 @@
 build/exview: src/image_window.vala src/main.vala src/scaled_image.vala src/region_selector.vala src/measure_bar.vala src/key_state.vala src/drag_state.vala src/mouse_state.vala src/resize_dialog.vala
 	mkdir -p build
-	valac --pkg gtk+-3.0 -X -lm -o build/exview $^
+	valac --pkg gtk+-3.0 --target-glib=2.32 -X -lm -o build/exview $^
 
 install: build/exview
 	mkdir -p ~/.local/share/exview

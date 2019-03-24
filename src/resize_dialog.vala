@@ -46,7 +46,8 @@ class ResizeDialog : Dialog {
 
         var css = new CssProvider();
         try {
-            css.load_from_data(".resize-content { padding: 6px; }");
+            var code = ".resize-content { padding: 6px; }";
+            css.load_from_data(code, code.length);
         } catch (Error e) {
             assert(false);
         }
