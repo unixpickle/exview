@@ -77,7 +77,7 @@ class ImageWindow : ApplicationWindow {
     }
 
     public static bool create_from_clipboard(Gtk.Application app) {
-        var clip = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
+        var clip = Clipboard.get_default(Gdk.Display.get_default());
         var pixbuf = clip.wait_for_image();
         if (pixbuf != null) {
             new ImageWindow(app, pixbuf, null).show_all();
