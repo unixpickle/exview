@@ -31,6 +31,7 @@ MenuModel create_menubar() {
     append_menu_item(file_menu, "_Open File...", "win.open", "<Control>O");
     append_menu_item(file_menu, "_Save", "win.save", "<Control>S");
     append_menu_item(file_menu, "Save _As...", "win.save-as", "<Shift><Control>S");
+    append_menu_item(file_menu, "_Print...", "win.print", "<Control>P");
     append_menu_item(file_menu, "_Close Window", "win.close", "<Control>W");
     menu.append_submenu("_File", file_menu);
 

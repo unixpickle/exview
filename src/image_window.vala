@@ -123,6 +123,7 @@ class ImageWindow : ApplicationWindow {
         var new_clipboard = new SimpleAction("new-clipboard", null);
         var save = new SimpleAction("save", null);
         var save_as = new SimpleAction("save-as", null);
+        var print = new SimpleAction("print", null);
         var crop = new SimpleAction("crop", null);
         var select_all = new SimpleAction("select-all", null);
         var resize = new SimpleAction("resize", null);
@@ -152,6 +153,7 @@ class ImageWindow : ApplicationWindow {
         });
         save.activate.connect(() => this.save());
         save_as.activate.connect(this.save_as);
+        print.activate.connect(this.show_print_dialog);
         crop.activate.connect(this.crop);
         select_all.activate.connect(this.selector.select_all);
         resize.activate.connect(this.resize_image);
@@ -168,6 +170,7 @@ class ImageWindow : ApplicationWindow {
         this.add_action(new_clipboard);
         this.add_action(save);
         this.add_action(save_as);
+        this.add_action(print);
         this.add_action(crop);
         this.add_action(select_all);
         this.add_action(resize);
@@ -232,6 +235,48 @@ class ImageWindow : ApplicationWindow {
             }
         }
         dialog.close();
+    }
+
+    private void show_print_dialog() {
+        var operation = new PrintOperation();
+        operation.n_pages = 1;
+        operation.draw_page.connect(this.draw_page);
+        var orientation = this.image.pixbuf.width > this.image.pixbuf.height ?
+            PageOrientation.LANDSCAPE :
+            PageOrientation.PORTRAIT;
+        var pageSetup = new PageSetup();
+        var printSettings = new PrintSettings();
+        pageSetup.set_orientation(orientation);
+        pageSetup = print_run_page_setup_dialog(this, pageSetup, printSettings);
+        operation.default_page_setup = pageSetup;
+        operation.print_settings = printSettings;
+        try {
+            operation.run(PrintOperationAction.PRINT_DIALOG, null);
+        } catch (Error error) {
+            var dialog = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE,
+                @"Unable to print: $(error.message)");
+            dialog.run();
+            dialog.close();
+        }
+    }
+
+    private void draw_page(PrintContext context, int page_nr) {
+        var ctx = context.get_cairo_context();
+
+        var pixbuf = this.image.pixbuf;
+
+        var scaleX = context.get_width() / (double)pixbuf.width;
+        var scaleY = context.get_height() / (double)pixbuf.height;
+        var scale = (scaleX < scaleY ? scaleX : scaleY);
+        var width = scale * (double)pixbuf.width;
+        var height = scale * (double)pixbuf.height;
+        ctx.save();
+        ctx.translate((context.get_width() - width) / 2, (context.get_height() - height) / 2);
+        ctx.scale(scale, scale);
+
+        Gdk.cairo_set_source_pixbuf(ctx, pixbuf, 0, 0);
+        ctx.paint();
+        ctx.restore();
     }
 
     private void crop() {
